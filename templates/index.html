@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <title>Movie Recommender</title>
+  <style>
+    .search-container {
+      position: relative;
+      width: 300px;
+    }
+
+    #movie-input {
+      width: 100%;
+      padding: 8px;
+    }
+
+    .dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      border: 1px solid #ccc;
+      background: white;
+      max-height: 150px;
+      overflow-y: auto;
+      display: none;
+      z-index: 1000;
+    }
+
+    .dropdown div {
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .dropdown div:hover {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <form method="POST" action="/" class="flex justify-center p-4">
+    {% csrf_token %}
+    <div class="search-container flex justify-center border border-gray-500 rounded-lg">
+      <input type="text" id="movie-input" name="movie" placeholder="Enter movie name" autocomplete="off">
+      <div id="dropdown" class="dropdown"></div>
+    </div>
+    <button type="submit" class="border border-gray-500 rounded-lg bg-red-800 text-white pl-4 pr-4">Search</button>
+  </form>
+
+  {% if movie %}
+    <p class="text-center">You searched for: {{ movie|title }}</p>
+  {% endif %}
+  {% if rec_m %}
+    <div class="flex flex-wrap p-4">
+        {% for title,poster,rating,final in rec_m %}
+            <div class="pr-4 min-w-[250px] flex-1">
+                <img src="https://image.tmdb.org/t/p/w500{{poster }}" alt="{{ title }}" class="w-full rounded">
+                <p class="text-sm text-center mt-2 text-gray-600">⭐ {{ rating }}</p>
+                <h3 class="mt-2 mb-2 text-center truncate">{{ title|title }}</h3>
+            </div>
+        {% endfor %}
+    {% else %}
+            <div class="flex flex-wrap p-4 text-center">
+                <p class="text-center mt-2 text-gray-600 w-full">❌ Movie not found in database</p>
+            </div>
+    {% endif %}
+    </div>
+  <script>
+    // Pass movie list from Django to JS
+    const movies = {{ movie_lst|safe }};
+    const input = document.getElementById("movie-input");
+    const dropdown = document.getElementById("dropdown");
+
+    input.addEventListener("input", function() {
+      const query = this.value.toLowerCase();
+      dropdown.innerHTML = "";
+      if (!query) {
+        dropdown.style.display = "none";
+        return;
+      }
+      const filtered = movies.filter(m => m.toLowerCase().includes(query)).slice(0, 5);
+      if (filtered.length === 0) {
+        dropdown.style.display = "none";
+        return;
+      }
+      filtered.forEach(movie => {
+        const option = document.createElement("div");
+        option.textContent = movie;
+        option.onclick = () => {
+          input.value = movie;
+          dropdown.style.display = "none";
+        };
+        dropdown.appendChild(option);
+      });
+      dropdown.style.display = "block";
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener("click", (e) => {
+      if (!e.target.closest(".search-container")) {
+        dropdown.style.display = "none";
+      }
+    });
+  </script>
+</body>
+</html>
