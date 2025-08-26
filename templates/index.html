@@ -56,7 +56,7 @@
     <div class="flex flex-wrap p-4">
         {% for title,poster,rating,final in rec_m %}
             <div class="pr-4 min-w-[250px] flex-1">
-                <img src="https://image.tmdb.org/t/p/w500{{poster }}" alt="{{ title }}" class="w-full rounded">
+                <img src="{{ poster }}" alt="{{ title }}" class="w-full rounded">
                 <p class="text-sm text-center mt-2 text-gray-600">⭐ {{ rating }}</p>
                 <h3 class="mt-2 mb-2 text-center truncate">{{ title|title }}</h3>
             </div>
